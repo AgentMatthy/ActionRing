@@ -18,6 +18,9 @@ PanelWindow {
     property int itemCount: config.itemCount
     property int hoveredIndex: -1
     
+    // Animation state
+    property bool isOpen: false
+    
     // Cursor position when menu was opened (screen-relative)
     property real cursorX: 0
     property real cursorY: 0
@@ -118,6 +121,7 @@ PanelWindow {
                 }
                 
                 radialMenuWindow.visible = true
+                radialMenuWindow.isOpen = true
                 focusItem.forceActiveFocus()
                 hapticOpen.running = true
             }
@@ -129,9 +133,22 @@ PanelWindow {
     }
     
     function close() {
-        visible = false
+        isOpen = false
         hoveredIndex = -1
         hapticSelect.running = true
+    }
+    
+    // Hide window after close animation completes
+    onIsOpenChanged: {
+        if (!isOpen) {
+            closeTimer.start()
+        }
+    }
+    
+    Timer {
+        id: closeTimer
+        interval: 100
+        onTriggered: radialMenuWindow.visible = false
     }
     
     function selectCurrent() {
@@ -215,6 +232,25 @@ PanelWindow {
         width: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) * 2
         height: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) * 2
         
+        // Menu open/close animation
+        scale: radialMenuWindow.isOpen ? 1.0 : 0.8
+        opacity: radialMenuWindow.isOpen ? 1.0 : 0.0
+        
+        Behavior on scale {
+            NumberAnimation {
+                duration: 100
+                easing.type: Easing.OutBack
+                easing.overshoot: 3
+            }
+        }
+        
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 100
+                easing.type: Easing.OutQuart
+            }
+        }
+        
         Repeater {
             model: radialMenuWindow.itemCount
             
@@ -238,6 +274,22 @@ PanelWindow {
                 radius: width / 2
                 
                 color: isHovered ? radialMenuWindow.itemHoverColor : radialMenuWindow.itemColor
+                scale: isHovered ? 1.15 : 1.0
+                
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 80
+                        easing.type: Easing.OutQuart
+                    }
+                }
+                
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 150
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 4
+                    }
+                }
                 
                 Text {
                     anchors.centerIn: parent
@@ -245,6 +297,16 @@ PanelWindow {
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: radialMenuWindow.circleSize * 0.45
                     color: config.iconColor
+                    
+                    scale: circleItem.isHovered ? 1.1 : 1.0
+                    
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 150
+                            easing.type: Easing.OutBack
+                            easing.overshoot: 4
+                        }
+                    }
                 }
             }
         }

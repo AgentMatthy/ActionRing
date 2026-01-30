@@ -3,12 +3,12 @@ import QtQuick
 QtObject {
     // Haptic feedback patterns (see mx4haptic.py for available patterns)
     // Available: click, tick, bump, double_click, hold, release, error, success
-    readonly property string hapticOpen: "bump"
-    readonly property string hapticHover: "tick"
-    readonly property string hapticSelect: "click"
+    readonly property string hapticOpen: ""
+    readonly property string hapticHover: "3"
+    readonly property string hapticSelect: "0"
     
     // Visual configuration
-    readonly property int menuRadius: 80
+    readonly property int menuRadius: 90
     readonly property int circleSize: 58
     
     // Colors
