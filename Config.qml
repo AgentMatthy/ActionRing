@@ -5,7 +5,8 @@ QtObject {
     // Available: click, tick, bump, double_click, hold, release, error, success
     readonly property string hapticOpen: ""
     readonly property string hapticHover: "3"
-    readonly property string hapticSelect: "0"
+    readonly property string hapticSelect: "1"
+    readonly property string hapticClose: "8"
     
     // Visual configuration
     readonly property int menuRadius: 90
@@ -18,11 +19,11 @@ QtObject {
     
     // Menu items: icon (nerdfont glyph) and action (bash command)
     readonly property var items: [
-        { icon: "", action: "" },                          // 0: top - browser
+        { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },                          // 0: top - browser
         { icon: "", action: "kitty yazi" },                           // 1: top-right - files
         { icon: "", action: "kitty" },                            // 2: right - terminal
         { icon: "", action: "neovide" },                             // 3: bottom-right - editor
-        { icon: "", action: "" },                          // 4: bottom - music
+        { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },                          // 4: bottom - music
         { icon: "", action: "" },                          // 5: bottom-left - chat
         { icon: "", action: "" },  // 6: left - toggle float
         { icon: "", action: "" },                    // 7: top-left - color picker

@@ -45,6 +45,11 @@ PanelWindow {
         command: ["/home/matthy/Dev/ActionMenu/mx4haptic.py", config.hapticSelect]
     }
     
+    Process {
+        id: hapticClose
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic.py", config.hapticClose]
+    }
+    
     // Action execution process
     Process {
         id: actionProcess
@@ -135,7 +140,7 @@ PanelWindow {
     function close() {
         isOpen = false
         hoveredIndex = -1
-        hapticSelect.running = true
+        hapticClose.running = true
     }
     
     // Hide window after close animation completes
@@ -154,8 +159,12 @@ PanelWindow {
     function selectCurrent() {
         if (hoveredIndex >= 0) {
             executeAction(hoveredIndex)
+            hapticSelect.running = true
+        } else {
+            hapticClose.running = true
         }
-        close()
+        isOpen = false
+        hoveredIndex = -1
     }
     
     function toggle() {
