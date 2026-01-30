@@ -51,7 +51,7 @@ PanelWindow {
     function executeAction(index: int) {
         if (index >= 0 && index < config.items.length) {
             const action = config.items[index].action
-            actionProcess.command = ["bash", "-c", action]
+            actionProcess.command = ["bash", "-c", action + " &"]
             actionProcess.running = true
         }
     }
