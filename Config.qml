@@ -18,14 +18,14 @@ QtObject {
     
     // Menu items: icon (nerdfont glyph) and action (bash command)
     readonly property var items: [
-        { icon: "", action: "firefox" },                          // 0: top - browser
-        { icon: "", action: "thunar" },                           // 1: top-right - files
-        { icon: "", action: "kitty" },                            // 2: right - terminal
-        { icon: "", action: "code" },                             // 3: bottom-right - editor
-        { icon: "", action: "spotify" },                          // 4: bottom - music
-        { icon: "", action: "discord" },                          // 5: bottom-left - chat
-        { icon: "", action: "hyprctl dispatch togglefloating" },  // 6: left - toggle float
-        { icon: "", action: "hyprpicker -a" },                    // 7: top-left - color picker
+        { icon: "", action: "" },                          // 0: top - browser
+        { icon: "", action: "kitty yazi" },                           // 1: top-right - files
+        { icon: "", action: "kitty" },                            // 2: right - terminal
+        { icon: "", action: "neovide" },                             // 3: bottom-right - editor
+        { icon: "", action: "" },                          // 4: bottom - music
+        { icon: "", action: "" },                          // 5: bottom-left - chat
+        { icon: "", action: "" },  // 6: left - toggle float
+        { icon: "", action: "" },                    // 7: top-left - color picker
     ]
     
     // Convenience property for item count

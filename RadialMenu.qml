@@ -51,7 +51,7 @@ PanelWindow {
     function executeAction(index: int) {
         if (index >= 0 && index < config.items.length) {
             const action = config.items[index].action
-            actionProcess.command = ["bash", "-c", action + " &"]
+            actionProcess.command = ["bash", "-c", "cd ~ && " + action + " &"]
             actionProcess.running = true
         }
     }
@@ -155,15 +155,14 @@ PanelWindow {
         const dy = mouseY - cursorY
         const distance = Math.sqrt(dx * dx + dy * dy)
         
-        // Must be within reasonable range of the circles
+        // Minimum distance to start selecting (dead zone in center)
         const minDist = menuRadius - circleSize
-        const maxDist = menuRadius + circleSize
         
-        if (distance < minDist || distance > maxDist) {
+        if (distance < minDist) {
             return -1
         }
         
-        // Calculate angle and find nearest circle
+        // Calculate angle and find nearest circle (no max distance)
         let angle = Math.atan2(dx, -dy) * 180 / Math.PI
         angle = (angle + 360) % 360
         
