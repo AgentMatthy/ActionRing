@@ -26,6 +26,10 @@ ShellRoot {
             radialMenu.toggle()
         }
         
+        function select(): void {
+            radialMenu.selectCurrent()
+        }
+        
         function isOpen(): bool {
             return radialMenu.visible
         }

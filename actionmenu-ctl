@@ -1,6 +1,6 @@
 #!/bin/bash
 # ActionMenu control script
-# Usage: actionmenu-ctl <open|close|toggle|status>
+# Usage: actionmenu-ctl <open|close|toggle|select|status>
 
 # Find the ActionMenu config path
 CONFIG_PATH="${ACTIONMENU_PATH:-/home/matthy/Dev/ActionMenu}"
@@ -15,11 +15,14 @@ case "$1" in
     toggle)
         qs -p "$CONFIG_PATH" ipc call menu toggle
         ;;
+    select)
+        qs -p "$CONFIG_PATH" ipc call menu select
+        ;;
     status)
         qs -p "$CONFIG_PATH" ipc call menu isOpen
         ;;
     *)
-        echo "Usage: actionmenu-ctl <open|close|toggle|status>"
+        echo "Usage: actionmenu-ctl <open|close|toggle|select|status>"
         exit 1
         ;;
 esac
