@@ -24,6 +24,8 @@ PanelWindow {
     
     // Animation state
     property bool isOpen: false
+    property bool isTransitioning: false  // True during submenu transitions
+    property int transitionDirection: 1   // 1 = opening submenu, -1 = closing submenu
     
     // Suppress initial mouse movement after menu opens
     property bool ignoreFirstMove: false
@@ -112,14 +114,16 @@ PanelWindow {
             cursorY: cursorY
         })
         
-        // Switch to submenu at new position
-        currentItems = submenuItems
-        itemCount = currentItems.length
-        cursorX = newCursorX
-        cursorY = newCursorY
-        hoveredIndex = -1
-        ignoreFirstMove = true
+        // Start transition animation
+        transitionDirection = 1
+        isTransitioning = true
         
+        // Store new state for after animation
+        pendingItems = submenuItems
+        pendingCursorX = newCursorX
+        pendingCursorY = newCursorY
+        
+        transitionOutTimer.start()
         hapticOpen.running = true
     }
     
@@ -133,15 +137,48 @@ PanelWindow {
         // Pop previous state from stack
         const prevState = menuStack.pop()
         
-        // Restore previous menu at new cursor position
-        currentItems = prevState.items
-        itemCount = currentItems.length
-        cursorX = newCursorX
-        cursorY = newCursorY
-        hoveredIndex = -1
-        ignoreFirstMove = true
+        // Start transition animation
+        transitionDirection = -1
+        isTransitioning = true
         
+        // Store new state for after animation
+        pendingItems = prevState.items
+        pendingCursorX = newCursorX
+        pendingCursorY = newCursorY
+        
+        transitionOutTimer.start()
         hapticOpen.running = true
+    }
+    
+    // Pending state for after transition
+    property var pendingItems: []
+    property real pendingCursorX: 0
+    property real pendingCursorY: 0
+    
+    // Timer to switch menu content mid-transition
+    Timer {
+        id: transitionOutTimer
+        interval: 80  // Wait for out animation
+        onTriggered: {
+            // Apply the pending state
+            radialMenuWindow.currentItems = radialMenuWindow.pendingItems
+            radialMenuWindow.itemCount = radialMenuWindow.currentItems.length
+            radialMenuWindow.cursorX = radialMenuWindow.pendingCursorX
+            radialMenuWindow.cursorY = radialMenuWindow.pendingCursorY
+            radialMenuWindow.hoveredIndex = -1
+            radialMenuWindow.ignoreFirstMove = true
+            
+            // Start in animation
+            transitionInTimer.start()
+        }
+    }
+    
+    Timer {
+        id: transitionInTimer
+        interval: 10  // Small delay before animating in
+        onTriggered: {
+            radialMenuWindow.isTransitioning = false
+        }
     }
     
     visible: false
@@ -226,8 +263,6 @@ PanelWindow {
     function close() {
         isOpen = false
         hoveredIndex = -1
-        currentItems = config.items  // Reset to main menu
-        itemCount = currentItems.length
         menuStack = []  // Clear submenu stack
         hapticClose.running = true
         hapticSleep.running = true  // Stop keepalive
@@ -243,7 +278,12 @@ PanelWindow {
     Timer {
         id: closeTimer
         interval: 100
-        onTriggered: radialMenuWindow.visible = false
+        onTriggered: {
+            radialMenuWindow.visible = false
+            // Reset to main menu after window is hidden
+            radialMenuWindow.currentItems = config.items
+            radialMenuWindow.itemCount = radialMenuWindow.currentItems.length
+        }
     }
     
     function selectCurrent() {
@@ -255,8 +295,6 @@ PanelWindow {
         }
         isOpen = false
         hoveredIndex = -1
-        currentItems = config.items
-        itemCount = currentItems.length
         menuStack = []
         hapticSleep.running = true  // Stop keepalive
     }
@@ -381,21 +419,38 @@ PanelWindow {
         width: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) * 2
         height: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) * 2
         
-        // Menu open/close animation
-        scale: radialMenuWindow.isOpen ? 1.0 : 0.8
-        opacity: radialMenuWindow.isOpen ? 1.0 : 0.0
+        // Only animate position during submenu transitions (not initial open)
+        Behavior on x {
+            enabled: radialMenuWindow.isOpen
+            NumberAnimation {
+                duration: 120
+                easing.type: Easing.OutExpo
+            }
+        }
+        
+        Behavior on y {
+            enabled: radialMenuWindow.isOpen
+            NumberAnimation {
+                duration: 120
+                easing.type: Easing.OutExpo
+            }
+        }
+        
+        // Menu open/close/transition animation
+        scale: (radialMenuWindow.isOpen && !radialMenuWindow.isTransitioning) ? 1.0 : 0.75
+        opacity: (radialMenuWindow.isOpen && !radialMenuWindow.isTransitioning) ? 1.0 : 0.0
         
         Behavior on scale {
             NumberAnimation {
                 duration: 100
                 easing.type: Easing.OutBack
-                easing.overshoot: 3
+                easing.overshoot: 2
             }
         }
         
         Behavior on opacity {
             NumberAnimation {
-                duration: 100
+                duration: 80
                 easing.type: Easing.OutQuart
             }
         }
