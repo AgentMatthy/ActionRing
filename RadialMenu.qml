@@ -21,6 +21,9 @@ PanelWindow {
     // Animation state
     property bool isOpen: false
     
+    // Suppress initial mouse movement after menu opens
+    property bool ignoreFirstMove: false
+    
     // Cursor position when menu was opened (screen-relative)
     property real cursorX: 0
     property real cursorY: 0
@@ -145,6 +148,8 @@ PanelWindow {
     }
     
     function open() {
+        hoveredIndex = -1  // Reset selection state before opening
+        ignoreFirstMove = true  // Ignore initial mouse position event
         hapticWake.running = true  // Wake device immediately before getting cursor
         cursorProcess.running = true
     }
@@ -227,6 +232,12 @@ PanelWindow {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         
         onPositionChanged: mouse => {
+            // Ignore the first position change after menu opens (prevents phantom selections)
+            if (radialMenuWindow.ignoreFirstMove) {
+                radialMenuWindow.ignoreFirstMove = false
+                return
+            }
+            
             const newIndex = radialMenuWindow.getHoveredIndex(mouse.x, mouse.y)
             if (newIndex !== radialMenuWindow.hoveredIndex && newIndex >= 0) {
                 hapticHover.running = true
