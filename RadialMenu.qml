@@ -15,8 +15,12 @@ PanelWindow {
     // Configuration from Config.qml
     property int menuRadius: config.menuRadius
     property int circleSize: config.circleSize
-    property int itemCount: config.itemCount
     property int hoveredIndex: -1
+    
+    // Current menu state
+    property var currentItems: config.items
+    property int itemCount: currentItems.length
+    property var menuStack: []  // Stack of {items, cursorX, cursorY} for submenu navigation
     
     // Animation state
     property bool isOpen: false
@@ -71,11 +75,73 @@ PanelWindow {
     }
     
     function executeAction(index: int) {
-        if (index >= 0 && index < config.items.length) {
-            const action = config.items[index].action
-            actionProcess.command = ["bash", "-c", "cd ~ && " + action + " &"]
-            actionProcess.running = true
+        if (index >= 0 && index < currentItems.length) {
+            const item = currentItems[index]
+            
+            // Check if this is a submenu trigger
+            if (item.submenu !== undefined) {
+                // Will be handled by hover, not click
+                return
+            }
+            
+            // Check if this is a close submenu action
+            if (item.closesubmenu === true) {
+                // Will be handled by hover, not click
+                return
+            }
+            
+            // Execute the action
+            if (item.action && item.action !== "") {
+                actionProcess.command = ["bash", "-c", "cd ~ && " + item.action + " &"]
+                actionProcess.running = true
+            }
         }
+    }
+    
+    function openSubmenu(submenuName: string, newCursorX: real, newCursorY: real) {
+        const submenuItems = config.submenus[submenuName]
+        if (submenuItems === undefined) {
+            console.log("Submenu not found:", submenuName)
+            return
+        }
+        
+        // Push current state to stack
+        menuStack.push({
+            items: currentItems,
+            cursorX: cursorX,
+            cursorY: cursorY
+        })
+        
+        // Switch to submenu at new position
+        currentItems = submenuItems
+        itemCount = currentItems.length
+        cursorX = newCursorX
+        cursorY = newCursorY
+        hoveredIndex = -1
+        ignoreFirstMove = true
+        
+        hapticOpen.running = true
+    }
+    
+    function closeSubmenu(newCursorX: real, newCursorY: real) {
+        if (menuStack.length === 0) {
+            // No parent menu, just close
+            close()
+            return
+        }
+        
+        // Pop previous state from stack
+        const prevState = menuStack.pop()
+        
+        // Restore previous menu at new cursor position
+        currentItems = prevState.items
+        itemCount = currentItems.length
+        cursorX = newCursorX
+        cursorY = newCursorY
+        hoveredIndex = -1
+        ignoreFirstMove = true
+        
+        hapticOpen.running = true
     }
     
     visible: false
@@ -150,6 +216,9 @@ PanelWindow {
     function open() {
         hoveredIndex = -1  // Reset selection state before opening
         ignoreFirstMove = true  // Ignore initial mouse position event
+        currentItems = config.items  // Reset to main menu
+        itemCount = currentItems.length
+        menuStack = []  // Clear submenu stack
         hapticWake.running = true  // Wake device immediately before getting cursor
         cursorProcess.running = true
     }
@@ -157,6 +226,9 @@ PanelWindow {
     function close() {
         isOpen = false
         hoveredIndex = -1
+        currentItems = config.items  // Reset to main menu
+        itemCount = currentItems.length
+        menuStack = []  // Clear submenu stack
         hapticClose.running = true
         hapticSleep.running = true  // Stop keepalive
     }
@@ -183,6 +255,9 @@ PanelWindow {
         }
         isOpen = false
         hoveredIndex = -1
+        currentItems = config.items
+        itemCount = currentItems.length
+        menuStack = []
         hapticSleep.running = true  // Stop keepalive
     }
     
@@ -194,20 +269,30 @@ PanelWindow {
         }
     }
     
-    // Get index of circle nearest to angle
+    // Get position of a menu item by index (in screen coordinates)
+    function getItemPosition(index: int): var {
+        const angle = index * (360 / itemCount) - 90
+        const angleRad = angle * Math.PI / 180
+        return {
+            x: cursorX + menuRadius * Math.cos(angleRad),
+            y: cursorY + menuRadius * Math.sin(angleRad)
+        }
+    }
+    
+    // Get index of circle based on angle (cursor must reach item distance)
     function getHoveredIndex(mouseX: real, mouseY: real): int {
         const dx = mouseX - cursorX
         const dy = mouseY - cursorY
         const distance = Math.sqrt(dx * dx + dy * dy)
         
-        // Minimum distance to start selecting (dead zone in center)
-        const minDist = menuRadius - circleSize
-        
+        // Dead zone: cursor must reach the inner edge of the item circles
+        // Items are at menuRadius, circles have radius circleSize/2
+        const minDist = menuRadius - circleSize / 2
         if (distance < minDist) {
             return -1
         }
         
-        // Calculate angle and find nearest circle (no max distance)
+        // Calculate angle and find nearest circle (angle-based, no max distance)
         let angle = Math.atan2(dx, -dy) * 180 / Math.PI
         angle = (angle + 360) % 360
         
@@ -215,6 +300,28 @@ PanelWindow {
         const index = Math.floor((angle + segmentSize / 2) % 360 / segmentSize)
         
         return index
+    }
+    
+    // Handle submenu navigation on hover
+    function handleHover(index: int) {
+        if (index < 0 || index >= currentItems.length) return
+        
+        const item = currentItems[index]
+        
+        // Get the position of the hovered item for submenu placement
+        const itemPos = getItemPosition(index)
+        
+        // Check if this opens a submenu
+        if (item.submenu !== undefined) {
+            openSubmenu(item.submenu, itemPos.x, itemPos.y)
+            return
+        }
+        
+        // Check if this closes the current submenu
+        if (item.closesubmenu === true) {
+            closeSubmenu(itemPos.x, itemPos.y)
+            return
+        }
     }
     
     // Focus item for keyboard input
@@ -241,6 +348,9 @@ PanelWindow {
             const newIndex = radialMenuWindow.getHoveredIndex(mouse.x, mouse.y)
             if (newIndex !== radialMenuWindow.hoveredIndex && newIndex >= 0) {
                 hapticHover.running = true
+                
+                // Check for submenu triggers on hover
+                radialMenuWindow.handleHover(newIndex)
             }
             radialMenuWindow.hoveredIndex = newIndex
         }
@@ -252,13 +362,18 @@ PanelWindow {
             }
             
             if (radialMenuWindow.hoveredIndex >= 0) {
+                const item = radialMenuWindow.currentItems[radialMenuWindow.hoveredIndex]
+                // Don't close if it's a submenu trigger (already handled by hover)
+                if (item.submenu !== undefined || item.closesubmenu === true) {
+                    return
+                }
                 radialMenuWindow.executeAction(radialMenuWindow.hoveredIndex)
             }
             radialMenuWindow.close()
         }
     }
     
-    // Visual: 8 circles arranged radially
+    // Visual: circles arranged radially
     Item {
         id: menuVisual
         x: radialMenuWindow.cursorX - radialMenuWindow.menuRadius - radialMenuWindow.circleSize / 2
@@ -296,7 +411,7 @@ PanelWindow {
                 property real angle: index * (360 / radialMenuWindow.itemCount) - 90
                 property real angleRad: angle * Math.PI / 180
                 property bool isHovered: radialMenuWindow.hoveredIndex === index
-                property var itemData: config.items[index]
+                property var itemData: radialMenuWindow.currentItems[index]
                 
                 x: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
                    radialMenuWindow.menuRadius * Math.cos(angleRad) - width / 2
@@ -327,7 +442,7 @@ PanelWindow {
                 
                 Text {
                     anchors.centerIn: parent
-                    text: circleItem.itemData.icon
+                    text: circleItem.itemData ? circleItem.itemData.icon : ""
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: radialMenuWindow.circleSize * 0.45
                     color: config.iconColor

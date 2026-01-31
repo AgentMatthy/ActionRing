@@ -17,17 +17,57 @@ QtObject {
     readonly property color itemHoverColor: "#333333"
     readonly property color iconColor: "#ffffff"
     
-    // Menu items: icon (nerdfont glyph) and action (bash command)
+    // Main menu items
+    // Each item can have:
+    //   - icon: nerdfont glyph
+    //   - action: bash command to execute
+    //   - submenu: name of submenu to open (instead of action)
+    //   - closesubmenu: true to go back to previous menu (instead of action)
+    
+    
+        // { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+        // { icon: "", action: "kitty yazi" },
+        // { icon: "", action: "kitty" },
+        // { icon: "", action: "neovide" },
+        // { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+    
+
     readonly property var items: [
-        { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },                          // 0: top - browser
-        { icon: "", action: "kitty yazi" },                           // 1: top-right - files
-        { icon: "", action: "kitty" },                            // 2: right - terminal
-        { icon: "", action: "neovide" },                             // 3: bottom-right - editor
-        { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },                          // 4: bottom - music
-        { icon: "", action: "" },                          // 5: bottom-left - chat
-        { icon: "", action: "" },  // 6: left - toggle float
-        { icon: "", action: "" },                    // 7: top-left - color picker
+        { icon: "", action: "" },
+        { icon: "", action: "" },
+        { icon: "", submenu: "media" },  // Opens the "apps" submenu
+        { icon: "", action: "" },
+        { icon: "", action: "" },
+        { icon: "", action: "" },
+        { icon: "", submenu: "apps" },  // Opens the "apps" submenu
+        { icon: "", action: "" },
     ]
+    
+    // Submenus definition
+    // Key is submenu name, value is array of items (same format as main items)
+    // Use closesubmenu: true on an item to go back to the previous menu
+    readonly property var submenus: {
+        "apps": [
+            { icon: "", action: "" },
+            { icon: "", action: "" },
+            { icon: "", closesubmenu: true },  // Back button
+            { icon: "", action: "" },
+            { icon: "", action: "" },
+            { icon: "", action: "kitty yazi" },
+            { icon: "", action: "kitty" },
+            { icon: "", action: "neovide" },
+        ],
+        "media": [
+            { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+            { icon: "", action: "" },
+            { icon: "", action: "" },
+            { icon: "", action: "" },
+            { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+            { icon: "", action: "" },
+            { icon: "", closesubmenu: true },  // Back button
+            { icon: "", action: "" },
+        ]
+    }
     
     // Convenience property for item count
     readonly property int itemCount: items.length
