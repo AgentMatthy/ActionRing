@@ -29,25 +29,36 @@ PanelWindow {
     property color itemColor: config.itemColor
     property color itemHoverColor: config.itemHoverColor
     
-    // Haptic feedback processes
+    // Haptic feedback processes (uses daemon via Unix socket for instant response)
     Process {
         id: hapticOpen
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic.py", config.hapticOpen]
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticOpen]
     }
     
     Process {
         id: hapticHover
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic.py", config.hapticHover]
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticHover]
     }
     
     Process {
         id: hapticSelect
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic.py", config.hapticSelect]
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticSelect]
     }
     
     Process {
         id: hapticClose
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic.py", config.hapticClose]
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticClose]
+    }
+    
+    // Keepalive control - wakes device when menu opens, sleeps when closes
+    Process {
+        id: hapticWake
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", "wake"]
+    }
+    
+    Process {
+        id: hapticSleep
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", "sleep"]
     }
     
     // Action execution process
@@ -134,6 +145,7 @@ PanelWindow {
     }
     
     function open() {
+        hapticWake.running = true  // Wake device immediately before getting cursor
         cursorProcess.running = true
     }
     
@@ -141,6 +153,7 @@ PanelWindow {
         isOpen = false
         hoveredIndex = -1
         hapticClose.running = true
+        hapticSleep.running = true  // Stop keepalive
     }
     
     // Hide window after close animation completes
@@ -165,6 +178,7 @@ PanelWindow {
         }
         isOpen = false
         hoveredIndex = -1
+        hapticSleep.running = true  // Stop keepalive
     }
     
     function toggle() {
