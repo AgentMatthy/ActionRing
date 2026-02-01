@@ -15,8 +15,8 @@ QtObject {
     
     // Colors
     readonly property color itemColor: "#000000"
-    readonly property color itemHoverColor: "#333333"
-    readonly property color iconColor: "#ffffff"
+    readonly property color itemHoverColor: "#3C3836"
+    readonly property color iconColor: "#D5C4A1"
     
     // Main menu items
     // Each item can have:
@@ -37,7 +37,7 @@ QtObject {
 
     readonly property var items: [
         { icon: "", action: "hyprlock" },
-        { icon: "", action: "" },
+        { icon: "", action: "sleep 0.3 && hyprpicker -a" },
         { icon: "", submenu: "media" },  // Opens the "apps" submenu
         { icon: "", action: "" },
         { icon: "", action: "" },

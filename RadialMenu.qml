@@ -586,7 +586,7 @@ PanelWindow {
                     color: "transparent"
                     // Border starts at 0 (invisible) and grows to 3px as it collapses
                     border.width: 3 * circleItem.currentPullProgress
-                    border.color: "#ffffff"
+                    border.color: config.iconColor
                     visible: circleItem.isPulling && circleItem.currentPullProgress > 0
                 }
                 
