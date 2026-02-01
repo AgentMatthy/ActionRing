@@ -47,6 +47,7 @@ PATTERNS = {
     "error": 12,
     "warning": 13,
     "strong": 14,
+    "submenu": 5,  # Alias for submenu entry feedback (double)
 }
 
 

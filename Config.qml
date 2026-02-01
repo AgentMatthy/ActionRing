@@ -7,11 +7,12 @@ QtObject {
     readonly property string hapticHover: "3"
     readonly property string hapticSelect: "1"
     readonly property string hapticClose: "8"
+    readonly property string hapticSubmenu: "2"  // Triggered when entering a submenu
     
     // Visual configuration
     readonly property int menuRadius: 90
     readonly property int circleSize: 58
-    readonly property int submenuPullDistance: 58  // Distance to pull outward to confirm submenu navigation
+    readonly property int submenuPullDistance: 68  // Distance to pull outward to confirm submenu navigation
     
     // Colors
     readonly property color itemColor: "#000000"

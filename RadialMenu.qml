@@ -64,6 +64,11 @@ PanelWindow {
         command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticClose]
     }
     
+    Process {
+        id: hapticSubmenu
+        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticSubmenu]
+    }
+    
     // Keepalive control - wakes device when menu opens, sleeps when closes
     Process {
         id: hapticWake
@@ -130,7 +135,7 @@ PanelWindow {
         pendingCursorY = newCursorY
         
         transitionOutTimer.start()
-        hapticOpen.running = true
+        hapticSubmenu.running = true
     }
     
     function closeSubmenu(newCursorX: real, newCursorY: real) {
@@ -153,7 +158,7 @@ PanelWindow {
         pendingCursorY = newCursorY
         
         transitionOutTimer.start()
-        hapticOpen.running = true
+        hapticSubmenu.running = true
     }
     
     // Pending state for after transition
