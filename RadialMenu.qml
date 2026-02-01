@@ -428,6 +428,10 @@ PanelWindow {
             
             const newIndex = radialMenuWindow.getHoveredIndex(mouse.x, mouse.y)
             
+            // Check if this is an empty slot (no interaction)
+            const isEmptySlot = newIndex >= 0 && newIndex < radialMenuWindow.currentItems.length && 
+                                radialMenuWindow.currentItems[newIndex].empty === true
+            
             // Check if we're tracking a pull-to-confirm for submenu
             if (radialMenuWindow.pendingSubmenuIndex >= 0) {
                 // If still hovering the same submenu item, check pull distance
@@ -439,7 +443,7 @@ PanelWindow {
                 }
             }
             
-            if (newIndex !== radialMenuWindow.hoveredIndex && newIndex >= 0) {
+            if (newIndex !== radialMenuWindow.hoveredIndex && newIndex >= 0 && !isEmptySlot) {
                 hapticHover.running = true
                 
                 // Check for submenu triggers on hover (starts pull-to-confirm)
@@ -524,6 +528,7 @@ PanelWindow {
                 property var itemData: radialMenuWindow.currentItems[index]
                 property bool isPulling: radialMenuWindow.pendingSubmenuIndex === index
                 property real currentPullProgress: isPulling ? radialMenuWindow.pullProgress : 0
+                property bool isEmpty: itemData && itemData.empty === true
                 
                 // Base position
                 property real baseX: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
@@ -531,8 +536,8 @@ PanelWindow {
                 property real baseY: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
                    radialMenuWindow.menuRadius * Math.sin(angleRad) - height / 2
                 
-                // Pull outward animation - moves item outward as you pull
-                property real pullOffset: isPulling ? currentPullProgress * 15 : 0
+                // Pull outward animation - moves item outward as you pull (not for empty items)
+                property real pullOffset: (isPulling && !isEmpty) ? currentPullProgress * 15 : 0
                 
                 x: baseX + pullOffset * Math.cos(angleRad)
                 y: baseY + pullOffset * Math.sin(angleRad)
@@ -548,8 +553,10 @@ PanelWindow {
                 height: radialMenuWindow.circleSize
                 radius: width / 2
                 
+                // Empty items are completely transparent, no hover effect
+                visible: !isEmpty
                 color: isHovered ? radialMenuWindow.itemHoverColor : radialMenuWindow.itemColor
-                scale: isHovered ? 1.15 : 1.0
+                scale: (isHovered && !isEmpty) ? 1.15 : 1.0
                 
                 Behavior on color {
                     ColorAnimation {

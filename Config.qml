@@ -24,6 +24,7 @@ QtObject {
     //   - action: bash command to execute
     //   - submenu: name of submenu to open (instead of action)
     //   - closesubmenu: true to go back to previous menu (instead of action)
+    //   - empty: true for an invisible spacer that takes up a slot
     
     
         // { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
@@ -31,10 +32,11 @@ QtObject {
         // { icon: "", action: "kitty" },
         // { icon: "", action: "neovide" },
         // { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+        // { empty: true },
     
 
     readonly property var items: [
-        { icon: "", action: "" },
+        { icon: "", action: "hyprlock" },
         { icon: "", action: "" },
         { icon: "", submenu: "media" },  // Opens the "apps" submenu
         { icon: "", action: "" },
