@@ -389,17 +389,17 @@ PanelWindow {
         // Check if user has pulled outward by the required amount
         if (pullAmount >= config.submenuPullDistance) {
             const item = currentItems[pendingSubmenuIndex]
-            const itemPos = getItemPosition(pendingSubmenuIndex)
             
             // Reset pending state before transition
             pendingSubmenuIndex = -1
             pullStartDistance = 0
             pullProgress = 0
             
+            // Use current cursor position as new menu center (where user finished pulling)
             if (item.submenu !== undefined) {
-                openSubmenu(item.submenu, itemPos.x, itemPos.y)
+                openSubmenu(item.submenu, mouseX, mouseY)
             } else if (item.closesubmenu === true) {
-                closeSubmenu(itemPos.x, itemPos.y)
+                closeSubmenu(mouseX, mouseY)
             }
         }
     }

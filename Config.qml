@@ -44,7 +44,7 @@ QtObject {
         { icon: "", action: "" },
         { icon: "", action: "" },
         { icon: "", submenu: "apps" },  // Opens the "apps" submenu
-        { icon: "", action: "" },
+        { icon: "", action: "sleep 0.3 && hyprctl dispatch global caelestia:screenshotFreeze" },
     ]
     
     // Submenus definition
