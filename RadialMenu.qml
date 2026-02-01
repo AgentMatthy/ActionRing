@@ -25,6 +25,7 @@ PanelWindow {
     // Submenu pull-to-confirm state
     property int pendingSubmenuIndex: -1  // Index of submenu/closesubmenu item being pulled
     property real pullStartDistance: 0    // Distance from center when pull started
+    property real pullProgress: 0.0       // 0.0 to 1.0 progress of pull confirmation
     
     // Animation state
     property bool isOpen: false
@@ -375,8 +376,11 @@ PanelWindow {
         const dy = mouseY - cursorY
         const currentDistance = Math.sqrt(dx * dx + dy * dy)
         
-        // Check if user has pulled outward by the required amount
+        // Calculate and update pull progress
         const pullAmount = currentDistance - pullStartDistance
+        pullProgress = Math.max(0, Math.min(1, pullAmount / config.submenuPullDistance))
+        
+        // Check if user has pulled outward by the required amount
         if (pullAmount >= config.submenuPullDistance) {
             const item = currentItems[pendingSubmenuIndex]
             const itemPos = getItemPosition(pendingSubmenuIndex)
@@ -384,6 +388,7 @@ PanelWindow {
             // Reset pending state before transition
             pendingSubmenuIndex = -1
             pullStartDistance = 0
+            pullProgress = 0
             
             if (item.submenu !== undefined) {
                 openSubmenu(item.submenu, itemPos.x, itemPos.y)
@@ -397,6 +402,7 @@ PanelWindow {
     function cancelPendingSubmenu() {
         pendingSubmenuIndex = -1
         pullStartDistance = 0
+        pullProgress = 0
     }
     
     // Focus item for keyboard input
@@ -516,11 +522,27 @@ PanelWindow {
                 property real angleRad: angle * Math.PI / 180
                 property bool isHovered: radialMenuWindow.hoveredIndex === index
                 property var itemData: radialMenuWindow.currentItems[index]
+                property bool isPulling: radialMenuWindow.pendingSubmenuIndex === index
+                property real currentPullProgress: isPulling ? radialMenuWindow.pullProgress : 0
                 
-                x: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
+                // Base position
+                property real baseX: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
                    radialMenuWindow.menuRadius * Math.cos(angleRad) - width / 2
-                y: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
+                property real baseY: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
                    radialMenuWindow.menuRadius * Math.sin(angleRad) - height / 2
+                
+                // Pull outward animation - moves item outward as you pull
+                property real pullOffset: isPulling ? currentPullProgress * 15 : 0
+                
+                x: baseX + pullOffset * Math.cos(angleRad)
+                y: baseY + pullOffset * Math.sin(angleRad)
+                
+                Behavior on pullOffset {
+                    NumberAnimation {
+                        duration: 50
+                        easing.type: Easing.OutQuad
+                    }
+                }
                 
                 width: radialMenuWindow.circleSize
                 height: radialMenuWindow.circleSize
@@ -542,6 +564,22 @@ PanelWindow {
                         easing.type: Easing.OutBack
                         easing.overshoot: 4
                     }
+                }
+                
+                // Collapsing ring - starts large and thin, shrinks and thickens to touch the item
+                Rectangle {
+                    id: collapsingRing
+                    anchors.centerIn: parent
+                    // Start at 40px larger, collapse to touch the item (0 extra)
+                    property real maxExpand: 40
+                    width: parent.width + maxExpand * (1 - circleItem.currentPullProgress)
+                    height: width
+                    radius: width / 2
+                    color: "transparent"
+                    // Border starts at 0 (invisible) and grows to 3px as it collapses
+                    border.width: 3 * circleItem.currentPullProgress
+                    border.color: "#ffffff"
+                    visible: circleItem.isPulling && circleItem.currentPullProgress > 0
                 }
                 
                 Text {
