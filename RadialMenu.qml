@@ -22,6 +22,10 @@ PanelWindow {
     property int itemCount: currentItems.length
     property var menuStack: []  // Stack of {items, cursorX, cursorY} for submenu navigation
     
+    // Submenu pull-to-confirm state
+    property int pendingSubmenuIndex: -1  // Index of submenu/closesubmenu item being pulled
+    property real pullStartDistance: 0    // Distance from center when pull started
+    
     // Animation state
     property bool isOpen: false
     property bool isTransitioning: false  // True during submenu transitions
@@ -167,6 +171,8 @@ PanelWindow {
             radialMenuWindow.cursorY = radialMenuWindow.pendingCursorY
             radialMenuWindow.hoveredIndex = -1
             radialMenuWindow.ignoreFirstMove = true
+            radialMenuWindow.pendingSubmenuIndex = -1  // Reset pull-to-confirm state
+            radialMenuWindow.pullStartDistance = 0
             
             // Start in animation
             transitionInTimer.start()
@@ -256,6 +262,8 @@ PanelWindow {
         currentItems = config.items  // Reset to main menu
         itemCount = currentItems.length
         menuStack = []  // Clear submenu stack
+        pendingSubmenuIndex = -1  // Reset pull-to-confirm state
+        pullStartDistance = 0
         hapticWake.running = true  // Wake device immediately before getting cursor
         cursorProcess.running = true
     }
@@ -264,6 +272,8 @@ PanelWindow {
         isOpen = false
         hoveredIndex = -1
         menuStack = []  // Clear submenu stack
+        pendingSubmenuIndex = -1  // Reset pull-to-confirm state
+        pullStartDistance = 0
         hapticClose.running = true
         hapticSleep.running = true  // Stop keepalive
     }
@@ -340,26 +350,53 @@ PanelWindow {
         return index
     }
     
-    // Handle submenu navigation on hover
-    function handleHover(index: int) {
+    // Handle submenu navigation on hover - now starts pull-to-confirm
+    function handleHover(index: int, mouseX: real, mouseY: real) {
         if (index < 0 || index >= currentItems.length) return
         
         const item = currentItems[index]
         
-        // Get the position of the hovered item for submenu placement
-        const itemPos = getItemPosition(index)
-        
-        // Check if this opens a submenu
-        if (item.submenu !== undefined) {
-            openSubmenu(item.submenu, itemPos.x, itemPos.y)
+        // Check if this is a submenu or closesubmenu item
+        if (item.submenu !== undefined || item.closesubmenu === true) {
+            // Start pull-to-confirm tracking
+            const dx = mouseX - cursorX
+            const dy = mouseY - cursorY
+            pullStartDistance = Math.sqrt(dx * dx + dy * dy)
+            pendingSubmenuIndex = index
             return
         }
+    }
+    
+    // Check if pull distance is enough to confirm submenu navigation
+    function checkPullConfirm(mouseX: real, mouseY: real) {
+        if (pendingSubmenuIndex < 0) return
         
-        // Check if this closes the current submenu
-        if (item.closesubmenu === true) {
-            closeSubmenu(itemPos.x, itemPos.y)
-            return
+        const dx = mouseX - cursorX
+        const dy = mouseY - cursorY
+        const currentDistance = Math.sqrt(dx * dx + dy * dy)
+        
+        // Check if user has pulled outward by the required amount
+        const pullAmount = currentDistance - pullStartDistance
+        if (pullAmount >= config.submenuPullDistance) {
+            const item = currentItems[pendingSubmenuIndex]
+            const itemPos = getItemPosition(pendingSubmenuIndex)
+            
+            // Reset pending state before transition
+            pendingSubmenuIndex = -1
+            pullStartDistance = 0
+            
+            if (item.submenu !== undefined) {
+                openSubmenu(item.submenu, itemPos.x, itemPos.y)
+            } else if (item.closesubmenu === true) {
+                closeSubmenu(itemPos.x, itemPos.y)
+            }
         }
+    }
+    
+    // Cancel pending submenu if user moves away from the item
+    function cancelPendingSubmenu() {
+        pendingSubmenuIndex = -1
+        pullStartDistance = 0
     }
     
     // Focus item for keyboard input
@@ -384,11 +421,23 @@ PanelWindow {
             }
             
             const newIndex = radialMenuWindow.getHoveredIndex(mouse.x, mouse.y)
+            
+            // Check if we're tracking a pull-to-confirm for submenu
+            if (radialMenuWindow.pendingSubmenuIndex >= 0) {
+                // If still hovering the same submenu item, check pull distance
+                if (newIndex === radialMenuWindow.pendingSubmenuIndex) {
+                    radialMenuWindow.checkPullConfirm(mouse.x, mouse.y)
+                } else {
+                    // Moved to a different item, cancel the pending submenu
+                    radialMenuWindow.cancelPendingSubmenu()
+                }
+            }
+            
             if (newIndex !== radialMenuWindow.hoveredIndex && newIndex >= 0) {
                 hapticHover.running = true
                 
-                // Check for submenu triggers on hover
-                radialMenuWindow.handleHover(newIndex)
+                // Check for submenu triggers on hover (starts pull-to-confirm)
+                radialMenuWindow.handleHover(newIndex, mouse.x, mouse.y)
             }
             radialMenuWindow.hoveredIndex = newIndex
         }

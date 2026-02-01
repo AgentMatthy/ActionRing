@@ -11,6 +11,7 @@ QtObject {
     // Visual configuration
     readonly property int menuRadius: 90
     readonly property int circleSize: 58
+    readonly property int submenuPullDistance: 35  // Distance to pull outward to confirm submenu navigation
     
     // Colors
     readonly property color itemColor: "#000000"
