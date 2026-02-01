@@ -99,7 +99,8 @@ PanelWindow {
             
             // Execute the action
             if (item.action && item.action !== "") {
-                actionProcess.command = ["bash", "-c", "cd ~ && " + item.action + " &"]
+                // Use systemd-run to fully detach process with proper user environment
+                actionProcess.command = ["systemd-run", "--user", "--no-block", "--", "bash", "-c", "cd ~ && " + item.action]
                 actionProcess.running = true
             }
         }
