@@ -65,13 +65,13 @@ QtObject {
             { icon: "", action: "kitty yazi" },
         ],
         "media": [
-            { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+            { icon: "", repeat: true, action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
             { icon: "", action: "playerctl next" },
             { icon: "󰐎", action: "playerctl play-pause" },
             { icon: "", action: "playerctl previous" },
-            { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+            { icon: "", repeat: true, action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
             { empty: true },
-            { icon: "", closesubmenu: true },  // Back button
+            { icon: "", closesubmenu: true },  // Back button
             { empty: true },
         ]
     }
