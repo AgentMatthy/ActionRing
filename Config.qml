@@ -43,7 +43,7 @@ QtObject {
         { icon: "", action: "hyprlock" },
         { icon: "", action: "sleep 0.3 && hyprpicker -a" },
         { icon: "", submenu: "media" },  // Opens the "apps" submenu
-        { icon: "", action: "" },
+        { icon: "", submenu: "display" },
         { icon: "", action: "" },
         { icon: "", action: "" },
         { icon: "", submenu: "apps" },  // Opens the "apps" submenu
@@ -73,6 +73,16 @@ QtObject {
             { empty: true },
             { icon: "", closesubmenu: true },  // Back button
             { empty: true },
+        ],
+        "display": [
+            { icon: "", repeat: true, action: "hyprctl dispatch global caelestia:brightnessUp" },
+            { empty: true },
+            { empty: true },
+            { empty: true },
+            { icon: "", repeat: true, action: "hyprctl dispatch global caelestia:brightnessDown" },
+            { empty: true },
+            { empty: true },
+            { icon: "", closesubmenu: true },  // Back button
         ]
     }
     
