@@ -32,8 +32,6 @@ PanelWindow {
     property real repeatPullStartDistance: 0  // Distance from center when repeat pull started
     property real repeatPullProgress: 0.0     // 0.0 to 1.0 progress of repeat pull
     property bool repeatFireFlash: false      // Triggers flash animation when action fires
-    property real repeatWarpX: 0              // Global X coordinate to warp cursor back to
-    property real repeatWarpY: 0              // Global Y coordinate to warp cursor back to
     
     // Animation state
     property bool isOpen: false
@@ -460,10 +458,6 @@ PanelWindow {
         repeatPullStartDistance = Math.sqrt(dx * dx + dy * dy)
         pendingRepeatIndex = index
         repeatPullProgress = 0
-        
-        // Store the current cursor position as global coordinates for warping back
-        repeatWarpX = mouseX + monitorOffsetX
-        repeatWarpY = mouseY + monitorOffsetY
     }
     
     // Check if pull distance is enough to fire repeat action (pump gesture)
@@ -492,8 +486,8 @@ PanelWindow {
             repeatFireFlash = true
             repeatFlashTimer.start()
             
-            // Warp cursor back to the start position
-            warpCursor(repeatWarpX, repeatWarpY)
+            // Warp cursor back towards the center of the radial menu
+            warpCursor(cursorX + monitorOffsetX, cursorY + monitorOffsetY)
             
             // Reset progress (cursor will physically be back at start)
             repeatPullProgress = 0
