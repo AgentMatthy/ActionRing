@@ -13,6 +13,7 @@ QtObject {
     readonly property int menuRadius: 90
     readonly property int circleSize: 58
     readonly property int submenuPullDistance: 68  // Distance to pull outward to confirm submenu navigation
+    readonly property int repeatPullDistance: 50   // Distance to pull outward to fire a repeat action (slightly shorter for faster pumping)
     
     // Colors
     readonly property color itemColor: "#000000"
@@ -26,6 +27,8 @@ QtObject {
     //   - submenu: name of submenu to open (instead of action)
     //   - closesubmenu: true to go back to previous menu (instead of action)
     //   - empty: true for an invisible spacer that takes up a slot
+    //   - repeat: true to enable pull-to-pump repeated activation (e.g., volume up/down)
+    //   - repeatPullDistance: (optional) override the pull distance for this item
     
     
         // { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
@@ -68,7 +71,7 @@ QtObject {
             { icon: "", action: "playerctl previous" },
             { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
             { empty: true },
-            { icon: "", closesubmenu: true },  // Back button
+            { icon: "", closesubmenu: true },  // Back button
             { empty: true },
         ]
     }

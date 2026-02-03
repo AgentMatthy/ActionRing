@@ -27,6 +27,12 @@ PanelWindow {
     property real pullStartDistance: 0    // Distance from center when pull started
     property real pullProgress: 0.0       // 0.0 to 1.0 progress of pull confirmation
     
+    // Repeat item pull-to-pump state
+    property int pendingRepeatIndex: -1       // Index of repeat item being pulled
+    property real repeatPullStartDistance: 0  // Distance from center when repeat pull started
+    property real repeatPullProgress: 0.0     // 0.0 to 1.0 progress of repeat pull
+    property bool repeatFireFlash: false      // Triggers flash animation when action fires
+    
     // Animation state
     property bool isOpen: false
     property bool isTransitioning: false  // True during submenu transitions
@@ -180,6 +186,9 @@ PanelWindow {
             radialMenuWindow.ignoreFirstMove = true
             radialMenuWindow.pendingSubmenuIndex = -1  // Reset pull-to-confirm state
             radialMenuWindow.pullStartDistance = 0
+            radialMenuWindow.pendingRepeatIndex = -1  // Reset repeat pull-to-pump state
+            radialMenuWindow.repeatPullStartDistance = 0
+            radialMenuWindow.repeatPullProgress = 0
             
             // Start in animation
             transitionInTimer.start()
@@ -271,6 +280,10 @@ PanelWindow {
         menuStack = []  // Clear submenu stack
         pendingSubmenuIndex = -1  // Reset pull-to-confirm state
         pullStartDistance = 0
+        pendingRepeatIndex = -1  // Reset repeat pull-to-pump state
+        repeatPullStartDistance = 0
+        repeatPullProgress = 0
+        repeatFireFlash = false
         hapticWake.running = true  // Wake device immediately before getting cursor
         cursorProcess.running = true
     }
@@ -281,6 +294,10 @@ PanelWindow {
         menuStack = []  // Clear submenu stack
         pendingSubmenuIndex = -1  // Reset pull-to-confirm state
         pullStartDistance = 0
+        pendingRepeatIndex = -1  // Reset repeat pull-to-pump state
+        repeatPullStartDistance = 0
+        repeatPullProgress = 0
+        repeatFireFlash = false
         hapticClose.running = true
         hapticSleep.running = true  // Stop keepalive
     }
@@ -411,6 +428,69 @@ PanelWindow {
         pullProgress = 0
     }
     
+    // Handle repeat item hover - starts pull-to-pump tracking
+    function handleRepeatItem(index: int, mouseX: real, mouseY: real) {
+        if (index < 0 || index >= currentItems.length) return
+        
+        const item = currentItems[index]
+        if (item.repeat !== true) return
+        
+        // Start pull-to-pump tracking
+        const dx = mouseX - cursorX
+        const dy = mouseY - cursorY
+        repeatPullStartDistance = Math.sqrt(dx * dx + dy * dy)
+        pendingRepeatIndex = index
+        repeatPullProgress = 0
+    }
+    
+    // Check if pull distance is enough to fire repeat action (pump gesture)
+    function checkRepeatPullConfirm(mouseX: real, mouseY: real) {
+        if (pendingRepeatIndex < 0) return
+        
+        const dx = mouseX - cursorX
+        const dy = mouseY - cursorY
+        const currentDistance = Math.sqrt(dx * dx + dy * dy)
+        
+        // Get the pull distance threshold for this item (allow per-item override)
+        const item = currentItems[pendingRepeatIndex]
+        const pullThreshold = item.repeatPullDistance !== undefined ? item.repeatPullDistance : config.repeatPullDistance
+        
+        // Calculate and update pull progress
+        const pullAmount = currentDistance - repeatPullStartDistance
+        repeatPullProgress = Math.max(0, Math.min(1, pullAmount / pullThreshold))
+        
+        // Check if user has pulled outward by the required amount
+        if (pullAmount >= pullThreshold) {
+            // Fire the action
+            executeAction(pendingRepeatIndex)
+            hapticSelect.running = true
+            
+            // Trigger flash animation
+            repeatFireFlash = true
+            repeatFlashTimer.start()
+            
+            // Virtual reset: update start distance to current position so user can pump again
+            repeatPullStartDistance = currentDistance
+            repeatPullProgress = 0
+        }
+    }
+    
+    // Cancel pending repeat if user moves away from the item
+    function cancelPendingRepeat() {
+        pendingRepeatIndex = -1
+        repeatPullStartDistance = 0
+        repeatPullProgress = 0
+    }
+    
+    // Timer to reset flash animation
+    Timer {
+        id: repeatFlashTimer
+        interval: 150
+        onTriggered: {
+            radialMenuWindow.repeatFireFlash = false
+        }
+    }
+    
     // Focus item for keyboard input
     Item {
         id: focusItem
@@ -449,11 +529,25 @@ PanelWindow {
                 }
             }
             
+            // Check if we're tracking a pull-to-pump for repeat item
+            if (radialMenuWindow.pendingRepeatIndex >= 0) {
+                // If still hovering the same repeat item, check pull distance
+                if (newIndex === radialMenuWindow.pendingRepeatIndex) {
+                    radialMenuWindow.checkRepeatPullConfirm(mouse.x, mouse.y)
+                } else {
+                    // Moved to a different item, cancel the pending repeat
+                    radialMenuWindow.cancelPendingRepeat()
+                }
+            }
+            
             if (newIndex !== radialMenuWindow.hoveredIndex && newIndex >= 0 && !isEmptySlot) {
                 hapticHover.running = true
                 
                 // Check for submenu triggers on hover (starts pull-to-confirm)
                 radialMenuWindow.handleHover(newIndex, mouse.x, mouse.y)
+                
+                // Check for repeat items on hover (starts pull-to-pump)
+                radialMenuWindow.handleRepeatItem(newIndex, mouse.x, mouse.y)
             }
             radialMenuWindow.hoveredIndex = newIndex
         }
@@ -468,6 +562,15 @@ PanelWindow {
                 const item = radialMenuWindow.currentItems[radialMenuWindow.hoveredIndex]
                 // Don't close if it's a submenu trigger (already handled by hover)
                 if (item.submenu !== undefined || item.closesubmenu === true) {
+                    return
+                }
+                // Execute action but don't close for repeat items
+                if (item.repeat === true) {
+                    radialMenuWindow.executeAction(radialMenuWindow.hoveredIndex)
+                    hapticSelect.running = true
+                    // Trigger flash animation
+                    radialMenuWindow.repeatFireFlash = true
+                    repeatFlashTimer.start()
                     return
                 }
                 radialMenuWindow.executeAction(radialMenuWindow.hoveredIndex)
@@ -536,6 +639,16 @@ PanelWindow {
                 property real currentPullProgress: isPulling ? radialMenuWindow.pullProgress : 0
                 property bool isEmpty: itemData && itemData.empty === true
                 
+                // Repeat item properties
+                property bool isRepeatItem: itemData && itemData.repeat === true
+                property bool isRepeatPulling: radialMenuWindow.pendingRepeatIndex === index
+                property real repeatPullProgress: isRepeatPulling ? radialMenuWindow.repeatPullProgress : 0
+                property bool isRepeatFlashing: isRepeatItem && radialMenuWindow.repeatFireFlash && isHovered
+                
+                // Combined pull offset (submenu or repeat)
+                property bool isAnyPulling: (isPulling || isRepeatPulling) && !isEmpty
+                property real combinedPullProgress: isPulling ? currentPullProgress : (isRepeatPulling ? repeatPullProgress : 0)
+                
                 // Base position
                 property real baseX: (radialMenuWindow.menuRadius + radialMenuWindow.circleSize / 2) + 
                    radialMenuWindow.menuRadius * Math.cos(angleRad) - width / 2
@@ -543,7 +656,7 @@ PanelWindow {
                    radialMenuWindow.menuRadius * Math.sin(angleRad) - height / 2
                 
                 // Pull outward animation - moves item outward as you pull (not for empty items)
-                property real pullOffset: (isPulling && !isEmpty) ? currentPullProgress * 15 : 0
+                property real pullOffset: isAnyPulling ? combinedPullProgress * 15 : 0
                 
                 x: baseX + pullOffset * Math.cos(angleRad)
                 y: baseY + pullOffset * Math.sin(angleRad)
@@ -579,7 +692,7 @@ PanelWindow {
                     }
                 }
                 
-                // Collapsing ring - starts large and thin, shrinks and thickens to touch the item
+                // Collapsing ring for submenu pull-to-confirm
                 Rectangle {
                     id: collapsingRing
                     anchors.centerIn: parent
@@ -593,6 +706,40 @@ PanelWindow {
                     border.width: 3 * circleItem.currentPullProgress
                     border.color: config.iconColor
                     visible: circleItem.isPulling && circleItem.currentPullProgress > 0
+                }
+                
+                // Collapsing ring for repeat item pull-to-pump (dedicated for easy future customization)
+                Rectangle {
+                    id: repeatCollapsingRing
+                    anchors.centerIn: parent
+                    // Start at 40px larger, collapse to touch the item (0 extra)
+                    property real maxExpand: 40
+                    width: parent.width + maxExpand * (1 - circleItem.repeatPullProgress)
+                    height: width
+                    radius: width / 2
+                    color: "transparent"
+                    // Border starts at 0 (invisible) and grows to 3px as it collapses
+                    border.width: 3 * circleItem.repeatPullProgress
+                    border.color: config.iconColor
+                    visible: circleItem.isRepeatPulling && circleItem.repeatPullProgress > 0
+                }
+                
+                // Flash overlay for repeat action fire confirmation
+                Rectangle {
+                    id: repeatFlashOverlay
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: parent.height
+                    radius: width / 2
+                    color: config.iconColor
+                    opacity: circleItem.isRepeatFlashing ? 0.4 : 0.0
+                    
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 150
+                            easing.type: Easing.OutQuart
+                        }
+                    }
                 }
                 
                 Text {
