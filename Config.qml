@@ -52,7 +52,7 @@ QtObject {
     // Use closesubmenu: true on an item to go back to the previous menu
     readonly property var submenus: {
         "apps": [
-            { icon: "", action: "" },
+            { icon: "", action: "zen-browser" },
             { icon: "", action: "" },
             { icon: "", closesubmenu: true },  // Back button
             { icon: "", action: "" },
