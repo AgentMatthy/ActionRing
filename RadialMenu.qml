@@ -32,6 +32,8 @@ PanelWindow {
     property real repeatPullStartDistance: 0  // Distance from center when repeat pull started
     property real repeatPullProgress: 0.0     // 0.0 to 1.0 progress of repeat pull
     property bool repeatFireFlash: false      // Triggers flash animation when action fires
+    property real repeatWarpX: 0              // Global X coordinate to warp cursor back to
+    property real repeatWarpY: 0              // Global Y coordinate to warp cursor back to
     
     // Animation state
     property bool isOpen: false
@@ -44,6 +46,10 @@ PanelWindow {
     // Cursor position when menu was opened (screen-relative)
     property real cursorX: 0
     property real cursorY: 0
+    
+    // Monitor offset (to convert screen-relative to global coordinates)
+    property real monitorOffsetX: 0
+    property real monitorOffsetY: 0
     
     // Colors from Config.qml
     property color itemColor: config.itemColor
@@ -255,6 +261,8 @@ PanelWindow {
                             const scr = Quickshell.screens[j]
                             if (scr.name === mon.name) {
                                 radialMenuWindow.screen = scr
+                                radialMenuWindow.monitorOffsetX = mon.x
+                                radialMenuWindow.monitorOffsetY = mon.y
                                 radialMenuWindow.cursorX = globalX - mon.x
                                 radialMenuWindow.cursorY = globalY - mon.y
                                 break
@@ -270,6 +278,17 @@ PanelWindow {
                 hapticOpen.running = true
             }
         }
+    }
+    
+    // Process to warp cursor back after repeat action fires
+    Process {
+        id: cursorWarpProcess
+        running: false
+    }
+    
+    function warpCursor(x: real, y: real) {
+        cursorWarpProcess.command = ["hyprctl", "dispatch", "movecursor", Math.round(x) + " " + Math.round(y)]
+        cursorWarpProcess.running = true
     }
     
     function open() {
@@ -441,6 +460,10 @@ PanelWindow {
         repeatPullStartDistance = Math.sqrt(dx * dx + dy * dy)
         pendingRepeatIndex = index
         repeatPullProgress = 0
+        
+        // Store the current cursor position as global coordinates for warping back
+        repeatWarpX = mouseX + monitorOffsetX
+        repeatWarpY = mouseY + monitorOffsetY
     }
     
     // Check if pull distance is enough to fire repeat action (pump gesture)
@@ -469,8 +492,10 @@ PanelWindow {
             repeatFireFlash = true
             repeatFlashTimer.start()
             
-            // Virtual reset: update start distance to current position so user can pump again
-            repeatPullStartDistance = currentDistance
+            // Warp cursor back to the start position
+            warpCursor(repeatWarpX, repeatWarpY)
+            
+            // Reset progress (cursor will physically be back at start)
             repeatPullProgress = 0
         }
     }
