@@ -1,6 +1,6 @@
 {
     // Path to the ActionRing installation directory
-    "installPath": "/home/user/ActionRing",
+    "installPath": "/home/matthy/Dev/ActionMenu",
 
     // Haptic feedback patterns (see mx4haptic.py for available patterns)
     // Available: click, soft, bump, tick, pulse, double, triple, ramp, buzz, alert, notify, success, error, warning, strong
@@ -24,47 +24,47 @@
     // Main menu items
     // Each item can have: icon, action, submenu, repeat, closesubmenu, empty
     "items": [
-        { "icon": "", "action": "hyprlock" },
-        { "icon": "", "action": "sleep 0.3 && hyprpicker -a" },
-        { "icon": "", "submenu": "media" },
-        { "icon": "", "submenu": "display" },
+        { "icon": "", "action": "hyprlock" },
+        { "icon": "", "action": "sleep 0.3 && hyprpicker -a" },
+        { "icon": "", "submenu": "media" },
+        { "icon": "", "submenu": "display" },
         { "icon": "", "action": "" },
         { "icon": "", "action": "" },
-        { "icon": "", "submenu": "apps" },
-        { "icon": "", "action": "sleep 0.3 && hyprctl dispatch global caelestia:screenshotFreeze" }
+        { "icon": "", "submenu": "apps" },
+        { "icon": "", "action": "sleep 0.3 && hyprctl dispatch global caelestia:screenshotFreeze" }
     ],
 
     // Submenus
     "submenus": {
         "apps": [
-            { "icon": "", "action": "zen-browser" },
+            { "icon": "", "action": "zen-browser" },
             { "icon": "", "action": "" },
-            { "icon": "", "closesubmenu": true },
+            { "icon": "", "closesubmenu": true },
             { "icon": "", "action": "" },
             { "icon": "󰓇", "action": "flatpak run --socket=wayland --nosocket=x11 com.spotify.Client --enable-features=UseOzonePlatform --ozone-platform=wayland" },
-            { "icon": "", "action": "neovide" },
-            { "icon": "", "action": "kitty" },
-            { "icon": "", "action": "kitty yazi" }
+            { "icon": "", "action": "neovide" },
+            { "icon": "", "action": "kitty" },
+            { "icon": "", "action": "kitty yazi" }
         ],
         "media": [
-            { "icon": "", "repeat": true, "action": "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
-            { "icon": "", "action": "playerctl next" },
+            { "icon": "", "repeat": true, "action": "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+            { "icon": "", "action": "playerctl next" },
             { "icon": "󰐎", "action": "playerctl play-pause" },
-            { "icon": "", "action": "playerctl previous" },
-            { "icon": "", "repeat": true, "action": "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
+            { "icon": "", "action": "playerctl previous" },
+            { "icon": "", "repeat": true, "action": "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
             { "empty": true },
-            { "icon": "", "closesubmenu": true },
+            { "icon": "", "closesubmenu": true },
             { "empty": true }
         ],
         "display": [
-            { "icon": "", "repeat": true, "action": "hyprctl dispatch global caelestia:brightnessUp" },
+            { "icon": "", "repeat": true, "action": "hyprctl dispatch global caelestia:brightnessUp" },
             { "empty": true },
             { "empty": true },
             { "empty": true },
-            { "icon": "", "repeat": true, "action": "hyprctl dispatch global caelestia:brightnessDown" },
+            { "icon": "", "repeat": true, "action": "hyprctl dispatch global caelestia:brightnessDown" },
             { "empty": true },
             { "empty": true },
-            { "icon": "", "closesubmenu": true }
+            { "icon": "", "closesubmenu": true }
         ]
     }
 }
