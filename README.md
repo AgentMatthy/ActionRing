@@ -32,14 +32,24 @@ Hold a button, flick toward an action, release. That's it.
 
 ## Installation
 
-### 1. Clone the repo
+### Quick install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AgentMatthy/ActionRing/main/install.sh | bash
+```
+
+This will clone the repo, set up the config file, and print the remaining steps.
+
+### Manual installation
+
+#### 1. Clone the repo
 
 ```bash
 git clone https://github.com/AgentMatthy/ActionRing.git
 cd ActionRing
 ```
 
-### 2. Install dependencies
+#### 2. Install dependencies
 
 Make sure [QuickShell](https://quickshell.outfoxxed.me/) and [Hyprland](https://hyprland.org/) are installed and running.
 
@@ -51,7 +61,7 @@ pip install hidapi
 
 Install [Symbols Nerd Font](https://www.nerdfonts.com/) for the menu icons.
 
-### 3. Set up the config file
+#### 3. Set up the config file
 
 Create the configuration directory and file:
 
@@ -71,7 +81,7 @@ Edit `~/.config/ActionRing/config.jsonc` and set `installPath` to where you clon
 
 > **Note:** If you skip this step, ActionRing will try to auto-detect its own location. The config file is only needed if auto-detection doesn't work for your setup.
 
-### 4. HID device permissions (for haptic feedback)
+#### 4. HID device permissions (for haptic feedback)
 
 Your user needs access to the MX Master 4 HID device. Create a udev rule:
 
