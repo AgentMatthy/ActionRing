@@ -1,6 +1,6 @@
 {
     // Path to the ActionRing installation directory
-    "installPath": "/home/matthy/Dev/ActionMenu",
+    "installPath": "/home/matthy/.local/share/ActionRing",
 
     // Haptic feedback patterns (see mx4haptic.py for available patterns)
     // Available: click, soft, bump, tick, pulse, double, triple, ramp, buzz, alert, notify, success, error, warning, strong
