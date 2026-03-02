@@ -12,6 +12,25 @@ PanelWindow {
         id: config
     }
     
+    // Installation path (auto-detected from QML location, overridden by ~/.config/ActionRing/config.jsonc)
+    property string installPath: Qt.resolvedUrl(".").toString().replace("file://", "").replace(/\/$/, "")
+    
+    // Read install path override from user config file
+    Process {
+        id: configReader
+        command: ["bash", "-c", "grep -oP '\"installPath\"\\s*:\\s*\"\\K[^\"]+' \"$HOME/.config/ActionRing/config.jsonc\" 2>/dev/null"]
+        running: true
+        
+        stdout: SplitParser {
+            onRead: data => {
+                const path = data.trim()
+                if (path !== "") {
+                    radialMenuWindow.installPath = path
+                }
+            }
+        }
+    }
+    
     // Configuration from Config.qml
     property int menuRadius: config.menuRadius
     property int circleSize: config.circleSize
@@ -56,38 +75,38 @@ PanelWindow {
     // Haptic feedback processes (uses daemon via Unix socket for instant response)
     Process {
         id: hapticOpen
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticOpen]
+        command: [radialMenuWindow.installPath + "/mx4haptic-daemon.py", config.hapticOpen]
     }
     
     Process {
         id: hapticHover
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticHover]
+        command: [radialMenuWindow.installPath + "/mx4haptic-daemon.py", config.hapticHover]
     }
     
     Process {
         id: hapticSelect
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticSelect]
+        command: [radialMenuWindow.installPath + "/mx4haptic-daemon.py", config.hapticSelect]
     }
     
     Process {
         id: hapticClose
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticClose]
+        command: [radialMenuWindow.installPath + "/mx4haptic-daemon.py", config.hapticClose]
     }
     
     Process {
         id: hapticSubmenu
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", config.hapticSubmenu]
+        command: [radialMenuWindow.installPath + "/mx4haptic-daemon.py", config.hapticSubmenu]
     }
     
     // Keepalive control - wakes device when menu opens, sleeps when closes
     Process {
         id: hapticWake
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", "wake"]
+        command: [radialMenuWindow.installPath + "/mx4haptic-daemon.py", "wake"]
     }
     
     Process {
         id: hapticSleep
-        command: ["/home/matthy/Dev/ActionMenu/mx4haptic-daemon.py", "sleep"]
+        command: [radialMenuWindow.installPath + "/mx4haptic-daemon.py", "sleep"]
     }
     
     // Action execution process

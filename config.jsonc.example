@@ -1,0 +1,5 @@
+{
+    // Path to the ActionRing installation directory
+    // This is where you cloned the ActionRing repository
+    "installPath": "/home/user/ActionRing"
+}

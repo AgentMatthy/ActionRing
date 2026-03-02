@@ -2,8 +2,26 @@
 # ActionMenu control script
 # Usage: actionmenu-ctl <open|close|toggle|select|status>
 
-# Find the ActionMenu config path
-CONFIG_PATH="${ACTIONMENU_PATH:-/home/matthy/Dev/ActionMenu}"
+# Find the ActionRing install path
+# Priority: ~/.config/ActionRing/config.jsonc > ACTIONMENU_PATH env var > script's own directory
+get_install_path() {
+    local config_file="$HOME/.config/ActionRing/config.jsonc"
+    if [ -f "$config_file" ]; then
+        local path
+        path=$(grep -oP '"installPath"\s*:\s*"\K[^"]+' "$config_file" 2>/dev/null)
+        if [ -n "$path" ]; then
+            echo "$path"
+            return
+        fi
+    fi
+    if [ -n "$ACTIONMENU_PATH" ]; then
+        echo "$ACTIONMENU_PATH"
+        return
+    fi
+    echo "$(cd "$(dirname "$0")" && pwd)"
+}
+
+CONFIG_PATH="$(get_install_path)"
 
 case "$1" in
     open)

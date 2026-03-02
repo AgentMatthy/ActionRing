@@ -51,21 +51,27 @@ pip install hidapi
 
 Install [Symbols Nerd Font](https://www.nerdfonts.com/) for the menu icons.
 
-### 3. Set up the path
+### 3. Set up the config file
 
-Set the `ACTIONMENU_PATH` environment variable to point to where you cloned the repo:
+Create the configuration directory and file:
 
 ```bash
-export ACTIONMENU_PATH="$HOME/path/to/actionring"
+mkdir -p ~/.config/ActionRing
+cp config.jsonc.example ~/.config/ActionRing/config.jsonc
 ```
 
-Add this to your shell profile (`.bashrc`, `.zshrc`, etc.) so it persists.
+Edit `~/.config/ActionRing/config.jsonc` and set `installPath` to where you cloned the repo:
 
-### 4. Update haptic paths
+```jsonc
+{
+    // Path to the ActionRing installation directory
+    "installPath": "/home/user/ActionRing"
+}
+```
 
-If you want haptic feedback, open `RadialMenu.qml` and replace all occurrences of `/home/matthy/Dev/ActionMenu/` with your actual install path.
+> **Note:** If you skip this step, ActionRing will try to auto-detect its own location. The config file is only needed if auto-detection doesn't work for your setup.
 
-### 5. HID device permissions (for haptic feedback)
+### 4. HID device permissions (for haptic feedback)
 
 Your user needs access to the MX Master 4 HID device. Create a udev rule:
 
