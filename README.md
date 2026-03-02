@@ -1,4 +1,4 @@
-# 🎯 ActionRing
+# ActionRing
 
 A radial action menu for Hyprland, built for the Logitech MX Master 4 — complete with haptic feedback.
 
@@ -6,7 +6,7 @@ Hold a button, flick toward an action, release. That's it.
 
 ---
 
-## ✨ Features
+## Features
 
 - **Radial menu overlay** — appears at your cursor, fades in with a smooth animation
 - **Submenus** — pull outward to dive into nested menus (media, display, apps, etc.)
@@ -17,7 +17,7 @@ Hold a button, flick toward an action, release. That's it.
 
 ---
 
-## 📦 Requirements
+## Requirements
 
 | Requirement | What it's for |
 |---|---|
@@ -30,13 +30,13 @@ Hold a button, flick toward an action, release. That's it.
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/AgentMatthy/actionring.git
-cd actionring
+git clone https://github.com/AgentMatthy/ActionRing.git
+cd ActionRing
 ```
 
 ### 2. Install dependencies
@@ -80,7 +80,7 @@ Unplug and replug your mouse receiver for the rule to take effect.
 
 ---
 
-## 🖱️ Usage
+## Usage
 
 ### Start the menu service
 
@@ -121,7 +121,7 @@ bind = SUPER, space, exec, /path/to/actionring/actionmenu-ctl toggle
 
 ---
 
-## 🎨 Customization
+## Customization
 
 All customization lives in **`Config.qml`**. Open it and make it yours.
 
@@ -164,7 +164,7 @@ Available patterns: `click`, `soft`, `bump`, `tick`, `pulse`, `double`, `triple`
 
 ---
 
-## 🧭 How it works
+## How it works
 
 1. **Open** — the menu appears as a ring of icons around your cursor
 2. **Hover** — move your mouse toward an action; items highlight as you aim at them
