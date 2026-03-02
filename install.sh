@@ -68,12 +68,8 @@ CONFIG_DIR="$HOME/.config/ActionRing"
 CONFIG_FILE="$CONFIG_DIR/config.jsonc"
 mkdir -p "$CONFIG_DIR"
 
-cat > "$CONFIG_FILE" << EOF
-{
-    // Path to the ActionRing installation directory
-    "installPath": "$INSTALL_DIR"
-}
-EOF
+cp "$INSTALL_DIR/config.jsonc.example" "$CONFIG_FILE"
+sed -i "s|/home/user/ActionRing|$INSTALL_DIR|" "$CONFIG_FILE"
 ok "Created ${BOLD}$CONFIG_FILE${RESET}"
 
 # ─── Make scripts executable ─────────────────────────────────────────
@@ -127,6 +123,6 @@ echo -e "     bind = SUPER, space, exec, $INSTALL_DIR/actionmenu-ctl toggle${RES
 echo ""
 
 echo -e "  ${BOLD}5. Customize${RESET}"
-echo -e "     Edit ${CYAN}$INSTALL_DIR/Config.qml${RESET} to change"
+echo -e "     Edit ${CYAN}~/.config/ActionRing/config.jsonc${RESET} to change"
 echo -e "     menu items, colors, layout, and haptic patterns."
 echo ""

@@ -1,91 +1,58 @@
 import QtQuick
+import Quickshell.Io
 
 QtObject {
-    // Haptic feedback patterns (see mx4haptic.py for available patterns)
-    // Available: click, tick, bump, double_click, hold, release, error, success
-    readonly property string hapticOpen: ""
-    readonly property string hapticHover: "3"
-    readonly property string hapticSelect: "1"
-    readonly property string hapticClose: "8"
-    readonly property string hapticSubmenu: "2"  // Triggered when entering a submenu
+    // All configuration is loaded from ~/.config/ActionRing/config.jsonc
+    // Properties below are fallback defaults when the config file is missing or incomplete.
+    
+    // Installation path
+    property string installPath: ""
+    
+    // Haptic feedback patterns
+    property string hapticOpen: ""
+    property string hapticHover: ""
+    property string hapticSelect: ""
+    property string hapticClose: ""
+    property string hapticSubmenu: ""
     
     // Visual configuration
-    readonly property int menuRadius: 90
-    readonly property int circleSize: 58
-    readonly property int submenuPullDistance: 68  // Distance to pull outward to confirm submenu navigation
-    readonly property int repeatPullDistance: 50   // Distance to pull outward to fire a repeat action (slightly shorter for faster pumping)
+    property int menuRadius: 90
+    property int circleSize: 58
+    property int submenuPullDistance: 68
+    property int repeatPullDistance: 50
     
     // Colors
-    readonly property color itemColor: "#000000"
-    readonly property color itemHoverColor: "#3C3836"
-    readonly property color iconColor: "#D5C4A1"
+    property color itemColor: "#000000"
+    property color itemHoverColor: "#3C3836"
+    property color iconColor: "#D5C4A1"
     
-    // Main menu items
-    // Each item can have:
-    //   - icon: nerdfont glyph
-    //   - action: bash command to execute
-    //   - submenu: name of submenu to open (instead of action)
-    //   - closesubmenu: true to go back to previous menu (instead of action)
-    //   - empty: true for an invisible spacer that takes up a slot
-    //   - repeat: true to enable pull-to-pump repeated activation (e.g., volume up/down)
-    //   - repeatPullDistance: (optional) override the pull distance for this item
+    // Menu items and submenus
+    property var items: []
+    property var submenus: ({})
     
-    
-        // { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
-        // { icon: "", action: "kitty yazi" },
-        // { icon: "", action: "kitty" },
-        // { icon: "", action: "neovide" },
-        // { icon: "", action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
-        // { empty: true },
-    
-
-    readonly property var items: [
-        { icon: "", action: "hyprlock" },
-        { icon: "", action: "sleep 0.3 && hyprpicker -a" },
-        { icon: "", submenu: "media" },  // Opens the "apps" submenu
-        { icon: "", submenu: "display" },
-        { icon: "", action: "" },
-        { icon: "", action: "" },
-        { icon: "", submenu: "apps" },  // Opens the "apps" submenu
-        { icon: "", action: "sleep 0.3 && hyprctl dispatch global caelestia:screenshotFreeze" },
-    ]
-    
-    // Submenus definition
-    // Key is submenu name, value is array of items (same format as main items)
-    // Use closesubmenu: true on an item to go back to the previous menu
-    readonly property var submenus: {
-        "apps": [
-            { icon: "", action: "zen-browser" },
-            { icon: "", action: "" },
-            { icon: "", closesubmenu: true },  // Back button
-            { icon: "", action: "" },
-            { icon: "󰓇", action: "flatpak run --socket=wayland --nosocket=x11 com.spotify.Client --enable-features=UseOzonePlatform --ozone-platform=wayland" },
-            { icon: "", action: "neovide" },
-            { icon: "", action: "kitty" },
-            { icon: "", action: "kitty yazi" },
-        ],
-        "media": [
-            { icon: "", repeat: true, action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
-            { icon: "", action: "playerctl next" },
-            { icon: "󰐎", action: "playerctl play-pause" },
-            { icon: "", action: "playerctl previous" },
-            { icon: "", repeat: true, action: "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%-; paplay /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga" },
-            { empty: true },
-            { icon: "", closesubmenu: true },  // Back button
-            { empty: true },
-        ],
-        "display": [
-            { icon: "", repeat: true, action: "hyprctl dispatch global caelestia:brightnessUp" },
-            { empty: true },
-            { empty: true },
-            { empty: true },
-            { icon: "", repeat: true, action: "hyprctl dispatch global caelestia:brightnessDown" },
-            { empty: true },
-            { empty: true },
-            { icon: "", closesubmenu: true },  // Back button
-        ]
-    }
-    
-    // Convenience property for item count
+    // Convenience property
     readonly property int itemCount: items.length
+    
+    function applyConfig(jsonStr) {
+        try {
+            var c = JSON.parse(jsonStr)
+            if (c.installPath !== undefined) installPath = c.installPath
+            if (c.hapticOpen !== undefined) hapticOpen = c.hapticOpen
+            if (c.hapticHover !== undefined) hapticHover = c.hapticHover
+            if (c.hapticSelect !== undefined) hapticSelect = c.hapticSelect
+            if (c.hapticClose !== undefined) hapticClose = c.hapticClose
+            if (c.hapticSubmenu !== undefined) hapticSubmenu = c.hapticSubmenu
+            if (c.menuRadius !== undefined) menuRadius = c.menuRadius
+            if (c.circleSize !== undefined) circleSize = c.circleSize
+            if (c.submenuPullDistance !== undefined) submenuPullDistance = c.submenuPullDistance
+            if (c.repeatPullDistance !== undefined) repeatPullDistance = c.repeatPullDistance
+            if (c.itemColor !== undefined) itemColor = c.itemColor
+            if (c.itemHoverColor !== undefined) itemHoverColor = c.itemHoverColor
+            if (c.iconColor !== undefined) iconColor = c.iconColor
+            if (c.items !== undefined) items = c.items
+            if (c.submenus !== undefined) submenus = c.submenus
+        } catch (e) {
+            console.log("ActionRing: Failed to parse config: " + e)
+        }
+    }
 }

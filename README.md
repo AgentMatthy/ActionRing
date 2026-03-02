@@ -70,16 +70,10 @@ mkdir -p ~/.config/ActionRing
 cp config.jsonc.example ~/.config/ActionRing/config.jsonc
 ```
 
-Edit `~/.config/ActionRing/config.jsonc` and set `installPath` to where you cloned the repo:
+Edit `~/.config/ActionRing/config.jsonc` and set `installPath` to where you cloned the repo.
+The config file contains all settings: menu items, submenus, colors, layout, and haptic patterns.
 
-```jsonc
-{
-    // Path to the ActionRing installation directory
-    "installPath": "/home/user/ActionRing"
-}
-```
-
-> **Note:** If you skip this step, ActionRing will try to auto-detect its own location. The config file is only needed if auto-detection doesn't work for your setup.
+> **Note:** If you skip this step, ActionRing will try to auto-detect its install location, but you won't have any menu items configured.
 
 #### 4. HID device permissions (for haptic feedback)
 
@@ -139,7 +133,7 @@ bind = SUPER, space, exec, /path/to/actionring/actionmenu-ctl toggle
 
 ## Customization
 
-All customization lives in **`Config.qml`**. Open it and make it yours.
+All customization lives in **`~/.config/ActionRing/config.jsonc`**. Open it and make it yours.
 
 ### Menu items
 
