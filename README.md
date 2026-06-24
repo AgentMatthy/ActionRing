@@ -112,6 +112,7 @@ Use `actionmenu-ctl` to open, close, and interact with the menu:
 ./actionmenu-ctl toggle    # Toggle open/close
 ./actionmenu-ctl select    # Confirm the hovered action
 ./actionmenu-ctl status    # Check if the menu is open
+./actionmenu-ctl config    # Open the configuration GUI
 ```
 
 ### Bind to your mouse or keyboard
@@ -133,7 +134,38 @@ bind = SUPER, space, exec, /path/to/actionring/actionmenu-ctl toggle
 
 ## Customization
 
-All customization lives in **`~/.config/ActionRing/config.jsonc`**. Open it and make it yours.
+### Configuration GUI
+
+The fastest way to shape your ring is the built-in editor:
+
+```bash
+./actionmenu-ctl config     # or bind it to a key
+```
+
+A floating panel lets you, without touching a config file:
+
+- **Switch menus** — jump between the main ring and any submenu, or create/delete submenus
+- **Add & remove entries** — build out each ring slot, reorder with the up/down arrows
+- **Set the entry type** — `Command`, `Submenu`, `Exit Submenu`, or `Empty` (spacer)
+- **Set the icon** — paste any Nerd Font glyph; a live preview shows how it looks
+- **Set the command** — for command entries, with a roomy multi-line field
+- **Toggle repeated action** — flip a switch to enable pull-to-pump for volume/brightness-style actions
+
+Hit **Save** and the running menu hot-reloads instantly — no restart required. Your previous
+config is backed up to `config.jsonc.bak` on every save.
+
+> **Note:** Saving rewrites `config.jsonc` as clean, indented JSON. Comments in the file are not
+> preserved across a GUI save, but every setting (colors, sizes, haptics) is kept intact.
+
+You can bind it in Hyprland just like the menu:
+
+```ini
+bind = SUPER, period, exec, /path/to/actionring/actionmenu-ctl config
+```
+
+### Manual editing
+
+All customization also lives in **`~/.config/ActionRing/config.jsonc`**. Open it and make it yours.
 
 ### Menu items
 

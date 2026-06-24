@@ -1,6 +1,6 @@
 #!/bin/bash
 # ActionMenu control script
-# Usage: actionmenu-ctl <open|close|toggle|select|status>
+# Usage: actionmenu-ctl <open|close|toggle|select|status|config>
 
 # Find the ActionRing install path
 # Priority: ~/.config/ActionRing/config.jsonc > ACTIONMENU_PATH env var > script's own directory
@@ -39,8 +39,17 @@ case "$1" in
     status)
         qs -p "$CONFIG_PATH" ipc call menu isOpen
         ;;
+    config)
+        qs -p "$CONFIG_PATH" ipc call config toggle
+        ;;
+    config-open)
+        qs -p "$CONFIG_PATH" ipc call config open
+        ;;
+    config-close)
+        qs -p "$CONFIG_PATH" ipc call config close
+        ;;
     *)
-        echo "Usage: actionmenu-ctl <open|close|toggle|select|status>"
+        echo "Usage: actionmenu-ctl <open|close|toggle|select|status|config>"
         exit 1
         ;;
 esac

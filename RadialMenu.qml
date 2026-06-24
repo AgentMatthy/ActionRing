@@ -15,6 +15,15 @@ PanelWindow {
     // Internal: directory where the QML files live (for finding parse-config.py)
     property string _scriptDir: Qt.resolvedUrl(".").toString().replace("file://", "").replace(/\/$/, "")
     
+    // Emitted when the user requests the configuration editor (right-click while open)
+    signal requestConfigEditor()
+    
+    // Re-read the config from disk and apply it live (used after the editor saves)
+    function reloadConfig() {
+        configReader._output = ""
+        configReader.running = true
+    }
+    
     // Read full config from ~/.config/ActionRing/config.jsonc
     Process {
         id: configReader
@@ -37,6 +46,11 @@ PanelWindow {
                 // Fallback: if config didn't set installPath, use the QML directory
                 if (config.installPath === "") {
                     config.installPath = radialMenuWindow._scriptDir
+                }
+                // Keep the live menu in sync if it's currently showing the main menu
+                if (!radialMenuWindow.visible) {
+                    radialMenuWindow.currentItems = config.items
+                    radialMenuWindow.itemCount = radialMenuWindow.currentItems.length
                 }
             }
         }
@@ -604,6 +618,7 @@ PanelWindow {
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
                 radialMenuWindow.close()
+                radialMenuWindow.requestConfigEditor()
                 return
             }
             

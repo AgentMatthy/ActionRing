@@ -8,6 +8,16 @@ ShellRoot {
     
     RadialMenu {
         id: radialMenu
+        
+        // Right-click while the ring is open opens the configuration editor
+        onRequestConfigEditor: configEditor.openEditor()
+    }
+    
+    // Configuration GUI (shares the script dir; hot-reloads the menu on save)
+    ConfigEditor {
+        id: configEditor
+        scriptDir: radialMenu._scriptDir
+        radialMenu: radialMenu
     }
     
     // IPC handler for command line control
@@ -32,6 +42,24 @@ ShellRoot {
         
         function isOpen(): bool {
             return radialMenu.visible
+        }
+    }
+    
+    // IPC handler for the configuration editor
+    IpcHandler {
+        target: "config"
+        
+        function open(): void {
+            configEditor.openEditor()
+        }
+        
+        function close(): void {
+            configEditor.closeEditor()
+        }
+        
+        function toggle(): void {
+            if (configEditor.visible) configEditor.closeEditor()
+            else configEditor.openEditor()
         }
     }
 }
